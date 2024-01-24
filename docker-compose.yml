@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  api_tickets:
+    container_name: api_tickets
+    image: api-tickets
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    ports:
+      - ${APP_PORT:-3000}:${APP_PORT:-3000}
+    networks:
+      - api_tickets-dev
+    volumes:
+      - .:/app
+      - api_tickets:/app/node_modules
+    restart: unless-stopped
+
+  mongo-api-tickets:
+    image: mongo
+    container_name: mongo-api-tickets
+    restart: always
+    command: mongod --port ${MONGO_PORT}
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - api_tickets-dev
+
+volumes:
+  api_tickets:
+  mongodb:
+
+networks:
+  api_tickets-dev:
+    name: api_tickets-dev
+    driver: bridge
